@@ -36,6 +36,7 @@ mythtv_cli_extensions depend on the suds-jurko module (https://bitbucket.org/jur
 
 # mythtv_cli.py help
 
+<pre>
 usage: mythtv_cli.py [-h] [--post] service operation [operation ...]
 
 MythTV Web Services CLI
@@ -56,9 +57,11 @@ Additional Help:
    mythtv_cli.py <service> <operation> help # for detailed parameter information
     
 Documentation: https://www.mythtv.org/wiki/Services_API
+</pre>
 
 # mythtv_chanmaint.py help
 
+<pre>
 usage: mythtv_chanmaint.py [-h] [--xmltv XMLTV] [--hostname HOSTNAME]
                            [--server-port PORT]
                            [--frontend-port FRONTEND_PORT] [--config CONFIG]
@@ -103,4 +106,5 @@ mapping from all CallSign variations as defined in the users settings file
 (mythtv_chanmaint_settings.py) and reads and checks each channel in the 
 backend.  If -y is not supplied the proposed updates are listed and the user
 is asked for confirmation prior to updating the backend.
+</pre>
 
