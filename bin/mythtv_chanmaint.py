@@ -255,6 +255,50 @@ mapping from all CallSign variations as defined in the users settings file
 (mythtv_chanmaint_settings.py) and reads and checks each channel in the 
 backend.  If -y is not supplied the proposed updates are listed and the user
 is asked for confirmation prior to updating the backend.
+
+
+
+Typical Workflow
+----------------
+
+The typical workflow is to recognise that you aren't getting EPG data for all
+your channels, or that you need to re-scan for whatever reason.
+
+1. Get a copy of the XMLTV EPG data.  Hopefully you know how this is done
+   already.  The program data isn't needed, just the channel data.
+   For my system:
+
+   $ tv_grab_huro --days 1 --offset 0 --output xmltv.xml --config ~/.mythtv/tv_grab.xmltv
+
+2. List the xmltv callsigns:
+
+   $ mythtv_chanmaint.py list xmltv --xmltv xmltv.xml
+
+3. List the MythTV callsigns:
+
+   $ mythtv_chanmaint.py list channels --host backend.host.name
+
+4. Update the mapping table in mythtv_chanmaint_settings.py (XMLTV_CALLSIGNS).
+
+   Note that the callsign as it exists in the xmltv file is the key
+   (left of the colon), and the MythTV callsign is the value (right of the
+   colon).
+
+   See mythtv_chanmaint_example.py for an example configuration with some
+   comments.
+
+5. Run the update:
+
+   $ mythtv_chanmaint.py update_xmltvids --host backend.host.name
+
+   Check the proposed updates and confirm if you're happy.  If not, go back
+   to step 4 and check the mapping table.
+
+6. Run mythfilldatabase
+
+   You should then be able to see the correct / additional EPG data in the
+   MythTV program guide.
+   
 """.format(
             services=services_string,
             prog=basename(sys.argv[0]))

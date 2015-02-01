@@ -16,11 +16,11 @@ echo "Appending mythtv_cli help"
 echo "# mythtv_cli.py help" >> ../README.md
 echo "" >> ../README.md
 echo "<pre>" >> ../README.md
-../bin/mythtv_cli.py --help >> ../README.md
+../bin/mythtv_cli.py --help | sed "s/</\&lt;/g" | sed "s/>/\&gt;/g" >> ../README.md
 echo "</pre>" >> ../README.md
 echo "" >> ../README.md
 echo "Appending mythtv_chanmaint help"
-echo "# mythtv_chanmaint.py help" >> ../README.md
+echo "# mythtv_chanmaint.py help" | sed "s/</\&lt;/g" | sed "s/>/\&gt;/g" >> ../README.md
 echo "" >> ../README.md
 echo "<pre>" >> ../README.md
 ../bin/mythtv_chanmaint.py --help >> ../README.md

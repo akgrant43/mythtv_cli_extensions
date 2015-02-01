@@ -12,10 +12,17 @@ mythtv_cli_extensions provides two utilities and a couple of python libraries fo
     <dd>Provides a command line utility for calling the MythTV web services and exploring the database a bit.</dd>
 
     <dt>mythtv_chanmaint.py</dt>
-    <dd>Provides a utility for maintaining XMLTVIDs and (eventually) channel icons in MythTV.</dd>
+    <dd><p>Provides a utility for maintaining XMLTVIDs and (eventually) channel icons in MythTV.</p>
+        <p>This is typically used to restore XMLTVIDs after a channel re-scan has been performed.</p>
+    </dd>
 </dl>
 
 The help text for each is included below.
+
+ToDo:
+
+* Save and restore icon definitions
+* Provide a way to modify CallSigns, Names and Visibility
 
 ## Python Libraries
 
