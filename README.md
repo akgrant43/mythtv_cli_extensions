@@ -34,24 +34,24 @@ The help text for each is included below.
     <dd>Provides low level access to the MythTV web services using the suds-jurko module.<br/>
         See https://bitbucket.org/jurko/suds for information about suds-jurko.</dd>
     <dt>MythTVQuerySet</dt>
-    <dd>Provides a django like interface for query the backend.</dd>
+    <dd>Provides a django like interface to query the backend.</dd>
     <dt>MythTVClass</dl>
-    <dd>Provides an easy way to access and write entries back to the MythTV backend, taking care of naming inconsistencies, etc.  Currently on Channel is supported.</dd>
+    <dd>Provides an easy way to access and write entries back to the MythTV backend, taking care of naming inconsistencies, etc.  Currently on Channel is supported.  Look at the version number if you're wondering.</dd>
 </dl>
 
 An example of retrieving all channels with call sign "ABC" and updating the first record:
 
-  from mythtvlib.object import MythTVQuerySet
+  ```from mythtvlib.object import MythTVQuerySet
   
   # Get a QuerySet on the Channel class
-  query_set = MythTVQuerySet("Channel")
+  query_set = MythTVQuerySet("MythTVChannel")
   # Filter records with CallSign equal to "ABC"
   query_set = query_set.filter(CallSign="^ABC$")  # This is a regular expression, and we don't want callsigns containing "ABC"
   matching_records = query_set.all()
   print(matching_records)
   # Update the first record's name to be "DEF"
   query_set[0].ChannelName = "DEF"
-  query_set[0].save()
+  query_set[0].save()```
 
 
 ## Dependencies
@@ -65,6 +65,7 @@ mythtv_cli_extensions depend on the suds-jurko module (https://bitbucket.org/jur
 
 LOTS!
 
+* Add automated testing
 * Save and restore icon definitions
 ** This can be done using mythtv_cli.py update, but must be manually maintained
 * Extend the library to handle all the classes defined by the web services

@@ -43,6 +43,8 @@ class MythTVQuerySet(object):
     
     def __init__(self, classname):
         self.mythtv_class = MythTVClass.classname(classname)
+        if self.mythtv_class is None:
+            raise MythTVObjectException("Unknown class name: {0}".format(classname))
         # _filters is a list of (field_name, field_regex, compiled_regex)
         self._filters = []
         self._records = None
