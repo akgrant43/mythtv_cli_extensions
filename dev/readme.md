@@ -69,6 +69,7 @@ LOTS!
 
 * Add automated testing
 * Save and restore icon definitions
-** This can be done using mythtv_cli.py update, but must be manually maintained
+  * This can be done using mythtv_cli.py update, but must be manually maintained
 * Extend the library to handle all the classes defined by the web services
+* Extend filter() to do proper numeric comparisons
 
