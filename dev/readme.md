@@ -41,17 +41,17 @@ The help text for each is included below.
 
 An example of retrieving all channels with call sign "ABC" and updating the first record:
 
-  ```from mythtvlib.object import MythTVQuerySet
-  
-  # Get a QuerySet on the Channel class
-  query_set = MythTVQuerySet("MythTVChannel")
-  # Filter records with CallSign equal to "ABC"
-  query_set = query_set.filter(CallSign="^ABC$")  # This is a regular expression, and we don't want callsigns containing "ABC"
-  matching_records = query_set.all()
-  print(matching_records)
-  # Update the first record's name to be "DEF"
-  query_set[0].ChannelName = "DEF"
-  query_set[0].save()```
+```from mythtvlib.object import MythTVQuerySet
+
+# Get a QuerySet on the Channel class
+query_set = MythTVQuerySet("MythTVChannel")
+# Filter records with CallSign equal to "ABC"
+query_set = query_set.filter(CallSign="^ABC$")  # This is a regular expression, and we don't want callsigns containing "ABC"
+matching_records = query_set.all()
+print(matching_records)
+# Update the first record's name to be "DEF"
+query_set[0].ChannelName = "DEF"
+query_set[0].save()```
 
 
 ## Dependencies
