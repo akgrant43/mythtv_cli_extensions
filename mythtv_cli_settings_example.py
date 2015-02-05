@@ -1,10 +1,15 @@
 #
-# mythtv_chainmaint_settings.py
+# mythtv_chainmaint_settings_example.py
 #
 # mythtv_chanmaint configuration, i.e.:
 #
 # * Logging details
 # * XMLTV callsign mapping
+#
+# Copy this file to mythtv_cli_settings.py and modify.
+#
+# DO NOT use mythtv_cli_settings_example.py directly, it will be overwritten
+# by updates to the software
 #
 
 from mythtv_cli_default import *
@@ -17,7 +22,9 @@ from mythtv_cli_default import *
 #
 # Note:
 # * It isn't necessary to specify channels where the callsigns match.
-# * See mythtv_chanmaint_example.py for additional comments and an example.
+# * See mythtv_cli_settings_example.py for additional comments and an example.
+# * The example isn't meant to be complete, if you live in the Czech Republic,
+#   you will still need to update this.
 #
 XMLTV_CALLSIGNS = {
 #   XMLTV callsign         : MythTV CallSign(s)
@@ -34,4 +41,4 @@ XMLTV_CALLSIGNS = {
     }
 
 # Backend hostname
-HOSTNAME="myth-usb.local"
+HOSTNAME="localhost"

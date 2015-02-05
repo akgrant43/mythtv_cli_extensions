@@ -1,9 +1,9 @@
 #
-# mythtv_chanmaint default settings.
+# mythtv_cli default settings.
 #
-# This file should not be modified by users.
-#
-# Custom configuration should be placed in mythtv_cli_settings.py
+# DO NOT modify this file, it will be overwritten by software updates.
+# You should create your own muthtv_cli_settings.py and place all custom
+# configuration information there.
 #
 LOGGING = {
     'version': 1,
@@ -47,3 +47,5 @@ LOGGING = {
 }
 
 XMLTV_CALLSIGNS = {}
+HOSTNAME='localhost'
+PORT=6544
