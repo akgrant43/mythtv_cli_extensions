@@ -35,8 +35,8 @@ The help text for each is included below.
         See https://bitbucket.org/jurko/suds for information about suds-jurko.</dd>
     <dt>MythTVQuerySet</dt>
     <dd>Provides a django like interface to query the backend.</dd>
-    <dt>MythTVClass</dl>
-    <dd>Provides an easy way to access and write entries back to the MythTV backend, taking care of naming inconsistencies, etc.  Currently on Channel is supported.  Look at the version number if you're wondering.</dd>
+    <dt>MythTVClass</dt>
+    <dd>Provides a python object representation of the back end web service objects, taking care of naming inconsistencies, etc.  Currently on Channel is supported.  Look at the version number if you're wondering.</dd>
 </dl>
 
 An example of retrieving all channels with call sign "ABC" and updating the first record:

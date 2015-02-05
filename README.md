@@ -35,8 +35,8 @@ The help text for each is included below.
         See https://bitbucket.org/jurko/suds for information about suds-jurko.</dd>
     <dt>MythTVQuerySet</dt>
     <dd>Provides a django like interface to query the backend.</dd>
-    <dt>MythTVClass</dl>
-    <dd>Provides an easy way to access and write entries back to the MythTV backend, taking care of naming inconsistencies, etc.  Currently on Channel is supported.  Look at the version number if you're wondering.</dd>
+    <dt>MythTVClass</dt>
+    <dd>Provides a python object representation of the back end web service objects, taking care of naming inconsistencies, etc.  Currently on Channel is supported.  Look at the version number if you're wondering.</dd>
 </dl>
 
 An example of retrieving all channels with call sign "ABC" and updating the first record:
@@ -69,12 +69,13 @@ LOTS!
 
 * Add automated testing
 * Save and restore icon definitions
-** This can be done using mythtv_cli.py update, but must be manually maintained
+  * This can be done using mythtv_cli.py update, but must be manually maintained
 * Extend the library to handle all the classes defined by the web services
+* Extend filter() to do proper numeric comparisons
 
 # mythtv_cli.py help
 
-<pre>
+```
 usage: mythtv_cli.py [-h] [--post] [--hostname HOSTNAME] [--server-port PORT]
                      [-y] [--version]
                      {dump,update} params [params ...]
@@ -112,11 +113,11 @@ Additional Help:
 
     
 MythTV Web Services Documentation: https://www.mythtv.org/wiki/Services_API
-</pre>
+```
 
 # mythtv_chanmaint.py help
 
-<pre>
+```
 usage: mythtv_chanmaint.py [-h] [--xmltv XMLTV] [--hostname HOSTNAME]
                            [--server-port PORT] [--config CONFIG]
                            [--create-config] [-y] [--version]
@@ -200,5 +201,5 @@ your channels, or that you need to re-scan for whatever reason.
 
    You should then be able to see the correct / additional EPG data in the
    MythTV program guide.
-</pre>
+```
 
