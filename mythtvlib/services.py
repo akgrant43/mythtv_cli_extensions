@@ -16,24 +16,21 @@ from os.path import exists
 from urllib.request import urlopen
 from suds.client import Client
 
-__VERSION__ = "0.00"
-
 class MythTVServiceException(Exception):
     pass
 
-class MythTVService(object):
+class MythTVServiceAPI(object):
     """Provide convenient access to the low-level MythTV Web Services."""
 
     services = ['Capture', 'Channel', 'Content', 'DVR', 'Frontend', 'Guide', 'Myth', 'Video']
 
-    def __init__(self, service_name, hostname="localhost", port=6544):
+    def __init__(self, service_name, backend):
+        self.service_name = service_name
+        self.backend = backend
         self.wsdl = None
         self.wsdl_fname = "/tmp/MythTV-{0}.wsdl".format(service_name)
         self.client = self._client_for(service_name)
         self.service = self.client.service
-        self.service_name = service_name
-        self.hostname = hostname
-        self.port = port
         self.wsdl_namespaces = self.wsdl.getroot().nsmap
         # FIXME: The wsdl namespace seems to have None as its name
         self.wsdl_namespaces['wsdl'] = self.wsdl_namespaces[None]
@@ -75,8 +72,8 @@ class MythTVService(object):
     
         url = 'http://{hostname}:{port}/{service}/wsdl'.format(
                 service=service,
-                hostname=self.hostname,
-                port=self.port)
+                hostname=self.backend.hostname,
+                port=self.backend.port)
         wsdl_string = urlopen(url)
         wsdl = parse(wsdl_string)
         root = wsdl.getroot()
@@ -174,11 +171,14 @@ class MythTVService(object):
         return
 
     def execute_args(self, args):
-        op_name = args.operation[0]
-        op_args = args.operation[1:]
+        op_name = args[0]
+        op_args = args[1:]
         if len(op_args) == 1 and op_args[0] == "help":
             self.print_operation_help(op_name)
             resp = ""
         else:
             resp = getattr(self.client.service, op_name)(*op_args)
         return resp
+
+    def __repr__(self):
+        return "{cls}({svc})".format(cls=self.__class__.__name__, svc=self.service_name)

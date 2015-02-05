@@ -7,7 +7,7 @@
 # * XMLTV callsign mapping
 #
 
-from mythtv_chanmaint_default import *
+from mythtv_cli_default import *
 
 #
 # XMLTV CallSign Mapping
@@ -27,7 +27,11 @@ XMLTV_CALLSIGNS = {
     "ČT24"                 : ["CT 24"],
     "ČT :D"                : ["CT :D / CT art"],
     "Nova Cinema"          : ["NOVA CINEMA"],
+    "Nova TV"              : ["NOVA"],
     "TV Barrandov"         : ["BARRANDOV TV"],
     "Fanda"                : ["FANDA"],
     "Óčko"                 : ["Ocko"]
     }
+
+# Backend hostname
+HOSTNAME="myth-usb.local"

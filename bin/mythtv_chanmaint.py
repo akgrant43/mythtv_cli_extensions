@@ -5,6 +5,7 @@ import logging.config
 import sys
 from lxml.etree import parse
 from os.path import exists, join, isdir, abspath, dirname, realpath, basename
+from urllib.error import URLError
 
 # Try and ensure imports will work in development workspace
 mydir = dirname(realpath(__file__))
@@ -12,20 +13,18 @@ proposed_path = abspath(join(mydir, '..'))
 if isdir(join(proposed_path, 'mythtvlib')) and (proposed_path not in sys.path):
     sys.path.append(proposed_path)
 
-from mythtvlib.services import MythTVService
-from mythtvlib.object import MythTVObject
+from mythtvlib import __VERSION__
+from mythtvlib.backend import MythTVBackend
+from mythtvlib.object import MythTVQuerySet
 
-try:
-    from mythtv_chanmaint_settings import *
-except:
-    from mythtv_chanmaint_default import *
+from mythtvlib.settings import settings
 
-logging.config.dictConfig(LOGGING)
-logger = logging.getLogger(__name__)
+logging.config.dictConfig(settings.LOGGING)
+logger = logging.getLogger(basename(sys.argv[0]))
 
 
 
-class MaintenanceException(Exception):
+class MythTVMaintenanceException(Exception):
     pass
 
 
@@ -35,8 +34,44 @@ class MythTVChannelMaintenance(object):
         self.args = args
         self._xmltv_data = None
         self._callsign_map = None
-        self._channel_client = None
+        self._backend = MythTVBackend.default(hostname=self.args.hostname,
+                                              port=self.args.port)
+        self._channels = None
         return
+
+    @property
+    def xmltv_data(self):
+        """Answer a dictionary of callsign->xmltvid
+        from the specificed xmltv file."""
+        if self._xmltv_data is not None:
+            return self._xmltv_data
+        
+        self.require_xmltv()
+        self._xmltv_data = {}
+        tree = parse(self.args.xmltv)
+        channels = tree.findall(".//channel")
+        for channel in channels:
+            display_name = channel.find(".//display-name")
+            self._xmltv_data[display_name.text] = channel.get('id')
+        return self._xmltv_data
+
+    @property
+    def channels(self):
+        if self._channels is not None:
+            return self._channels
+        try:
+            self._channels = MythTVQuerySet('MythTVChannel').all()
+        except (ConnectionRefusedError, URLError) as e:
+            if self._backend.hostname == "localhost":
+                logger.info("hostname=='localhost' - has it been set in mythtv_cli_settings?")
+            msg = ("Unable to get backend service.  Please check "
+                   "hostname={host}, port={port} is correct and the backend "
+                   "is up").format(
+                        host=self._backend.hostname, port=self._backend.port)
+            logger.fatal(msg)
+            logger.fatal("Error: {0}".format(e))
+            exit(1)
+        return self._channels
 
     def require_xmltv(self):
         "Check that the XMLTV file name has been supplied and exists"
@@ -62,92 +97,35 @@ class MythTVChannelMaintenance(object):
         elif param == "channels":
             self.list_channels()
         else:
-            raise MaintenanceException("Unknown list parameter: {0}".format(param))
-        return
-
-    @property
-    def channel_client(self):
-        "Answer a suds client for the Channel service"
-        if self._channel_client is not None:
-            return self._channel_client
-        self._channel_client = MythTVService('Channel',
-                                   hostname=self.args.hostname,
-                                   port=self.args.port)
-        return self._channel_client
-
-    def videosources(self):
-        """Iterate over all videosources in the backend"""
-        video_services = self.channel_client.service.GetVideoSourceList()
-        for vss in video_services.VideoSources:
-            yield vss[1]
-        return
-
-    def channels(self, videosource_id):
-        """Iterate over all channels in the specified videosource id"""
-        channels = self.channel_client.service.GetChannelInfoList(videosource_id)
-        # channels is a ChannelInfoList
-        # channels.ChannelInfos is ArrayOfChannelInfo,
-        # which is a an array like object with one entry,
-        # a list of ChannelInfo
-        for channel in channels.ChannelInfos[0]:
-            yield channel
-        return        
-
-    def all_channels(self):
-        "Iterate over all channels, i.e. over all videosources"
-        for vss in self.videosources():
-            for vs in vss:
-                for channel in self.channels(vs.Id):
-                    yield channel
+            raise MythTVMaintenanceException("Unknown list parameter: {0}".format(param))
         return
 
     def list_channels(self):
         "List the MythTV Channels"
-
-        fmt_string = "{id:<5} {callsign:<20} {channum:<7} {name:<20} {visible:<7} {xmltvid:<20} {icon:<20}"
+        fmt_string = "{id:<5} {vs:<3} {callsign:<20} {channum:<7} {name:<20} {visible:<7} {xmltvid:<20} {icon:<20}"
         #import pdb; pdb.set_trace()
-        for vss in self.videosources():
-            # VideoSources is ... 
-            for vs in vss:
-                source_id = vs.Id
-                print("Video Source: {0}".format(vs.SourceName))
-                print("="*105)
-                print(fmt_string.format(
-                        id="Id",
-                        callsign="CallSign",
-                        channum="ChanNum",
-                        name="Name",
-                        visible="Visible",
-                        xmltvid="XMLTVID",
-                        icon="Icon URL"))
-                print('-'*90)
-                for channel in self.channels(source_id):
-                    print(fmt_string.format(
-                        id=channel.ChanId,
-                        callsign=channel.CallSign,
-                        channum=channel.ChanNum,
-                        name=channel.ChannelName,
-                        visible=channel.Visible,
-                        xmltvid=channel.XMLTVID or "",
-                        icon=channel.IconURL or ""))
-                print("")
+        print(fmt_string.format(
+                id="Id",
+                vs="Src",
+                callsign="CallSign",
+                channum="ChanNum",
+                name="Name",
+                visible="Visible",
+                xmltvid="XMLTVID",
+                icon="Icon URL"))
+        print('-'*100)
+        for channel in self.channels:
+            print(fmt_string.format(
+                id=channel.ChanId,
+                vs=channel.SourceId,
+                callsign=channel.CallSign,
+                channum=channel.ChanNum,
+                name=channel.ChannelName,
+                visible=channel.Visible,
+                xmltvid=channel.XMLTVID or "",
+                icon=channel.IconURL or ""))
+        print("")
         return
-
-    @property
-    def xmltv_data(self):
-        """Answer a dictionary of callsign->xmltvid
-        from the specificed xmltv file."""
-        if self._xmltv_data is not None:
-            return self._xmltv_data
-        
-        self.require_xmltv()
-        self._xmltv_data = {}
-        tree = parse(self.args.xmltv)
-        channels = tree.findall(".//channel")
-        for channel in channels:
-            display_name = channel.find(".//display-name")
-            self._xmltv_data[display_name.text] = channel.get('id')
-        return self._xmltv_data
 
     def list_xmltv(self):
         "List the XMLTV channels"
@@ -170,14 +148,14 @@ class MythTVChannelMaintenance(object):
         appropriate XMLTVID."""
         if self._callsign_map is not None:
             return self._callsign_map
-        if len(XMLTV_CALLSIGNS) == 0:
+        if len(settings.XMLTV_CALLSIGNS) == 0:
             logger.warn("CallSign mapping is empty."
-                "  This normally should be configured in mythtv_chanmaint_settings.py")
+                "  This normally should be configured in mythtv_cli_settings.py")
         self._callsign_map = {}
         # Ensure that the callsigns in the XMLTV file map to themselves
         for callsign, xmltvid in self.xmltv_data.items():
             self._callsign_map[callsign] = xmltvid
-            alternates = XMLTV_CALLSIGNS.get(callsign)
+            alternates = settings.XMLTV_CALLSIGNS.get(callsign)
             if alternates is not None:
                 for alternate in alternates:
                     self._callsign_map[alternate] = xmltvid
@@ -189,14 +167,14 @@ class MythTVChannelMaintenance(object):
         proposed_changes = []
         # proposed_changes is a list of tuples:
         #    (ChanID, CallSign, New XMLTVID)
-        for channel in self.all_channels():
+        for channel in self.channels:
             new_xmltvid = csmap.get(channel.CallSign)
             if new_xmltvid is None:
                 continue
-            if self.args.replace or (new_xmltvid != channel.XMLTVID):
-                proposed_changes.append((channel.ChanId, channel.CallSign, new_xmltvid))
+            if new_xmltvid != channel.XMLTVID:
+                proposed_changes.append((channel, new_xmltvid))
         if len(proposed_changes) == 0:
-            logging.info("update_xmltvids: no updates required")
+            logger.info("update_xmltvids: no updates required")
             return
         if self.args.yes:
             proceed = True
@@ -210,30 +188,28 @@ class MythTVChannelMaintenance(object):
             print('-'*85)
             for proposed in proposed_changes:
                 print(fmt_string.format(
-                    id=proposed[0],
-                    callsign=proposed[1],
-                    xmltvid=proposed[2]))
+                    id=proposed[0].ChanId,
+                    callsign=proposed[0].CallSign,
+                    xmltvid=proposed[1]))
             answer = input("Proceed [y/N]? ")
             proceed = answer.lower() in ["y", "yes"]
         if proceed:
             for proposed in proposed_changes:
+                channel = proposed[0]
                 old_xmltvid = channel.XMLTVID
-                channel = MythTVObject('Channel', [proposed[0]],
-                                       self.args.hostname, self.args.port)
-                channel.XMLTVID = proposed[2]
+                channel.XMLTVID = proposed[1]
                 channel.save()
-                logging.info("ChanID: {callsign} ({cid}): XMLTVID {old} -> {new}".format(
-                        callsign=proposed[1],
-                        cid=proposed[0],
+                logger.info("ChanID: {callsign} ({cid}): XMLTVID '{old}' -> '{new}'".format(
+                        callsign=channel.CallSign,
+                        cid=channel.ChanId,
                         old=old_xmltvid,
-                        new=proposed[2]))
+                        new=channel.XMLTVID))
         return
  
 
 
 def main():
     logger.debug("Starting")
-    services_string = ", ".join(MythTVService.services)
     epilog = """
 {prog} has 3 basic use cases:
 
@@ -241,7 +217,7 @@ def main():
         List the channel and XMLTVID data contained in the xmltv file
     {prog} list channels
         List the channel data contained in the MythTV backend
-    {prog} update_xmltvids --xmltv file.name [-y] [--replace]
+    {prog} update_xmltvids --xmltv file.name [-y]
         Update Channel XMLTVIDs, see below
 
 Updating Channel XMLTVIDs
@@ -258,8 +234,8 @@ is asked for confirmation prior to updating the backend.
 
 
 
-Typical Workflow
-----------------
+Typical XMLTVID Workflow
+------------------------
 
 The typical workflow is to recognise that you aren't getting EPG data for all
 your channels, or that you need to re-scan for whatever reason.
@@ -298,10 +274,8 @@ your channels, or that you need to re-scan for whatever reason.
 
    You should then be able to see the correct / additional EPG data in the
    MythTV program guide.
-   
-""".format(
-            services=services_string,
-            prog=basename(sys.argv[0]))
+
+""".format(prog=basename(sys.argv[0]))
     parser = argparse.ArgumentParser(description="MythTV Channel Maintenance",
                                      formatter_class=argparse.RawDescriptionHelpFormatter,
                                      epilog=epilog)
@@ -309,14 +283,14 @@ your channels, or that you need to re-scan for whatever reason.
                         default=None,
                         help='XMLTV data file')
     parser.add_argument('--hostname',
-                        default="localhost",
+                        default=None,
                         help='MythTV Backend hostname (localhost)')
     parser.add_argument('--server-port', dest='port',
-                        default="6544",
+                        default=None,
                         help="MythTV Backend services port (6544)")
-    parser.add_argument('--frontend-port',
-                        default="1234",
-                        help="MythTV Frontend services port (1234)")
+#     parser.add_argument('--frontend-port',
+#                         default=None,
+#                         help="MythTV Frontend services port (1234)")
     parser.add_argument('--config',
                         default="mythtv_chanmaint.dat",
                         help="Configuration data")
@@ -333,6 +307,9 @@ your channels, or that you need to re-scan for whatever reason.
     parser.add_argument('params',
                         nargs='?',
                         help="Command parameter")
+    parser.add_argument('--version',
+                        action='version',
+                        version='%(prog)s version '+ __VERSION__)
     args = parser.parse_args()
 
     maint = MythTVChannelMaintenance(args)

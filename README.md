@@ -5,11 +5,17 @@ First: Many thanks to the developers of the MythTV project for making such a gre
 
 mythtv_cli_extensions provides two utilities and a couple of python libraries for use with the MythTV DVR software.  To find out more about MythTV please see http://mythtv.org.
 
+WARNING: This software is still in the early development stage, there's no guarantee of backward compatibility until it reaches V1.0.
+
 ## Utilities
 
 <dl>
     <dt>mythtv_cli.py</dt>
-    <dd>Provides a command line utility for calling the MythTV web services and exploring the database a bit.</dd>
+    <dd>Provides a command line utility for:
+    <ul>
+        <li>calling the MythTV web services and exploring the database a bit.</li>
+        <li>updating the database.  Only fields that are considered user maintainable can be modifed.  Currently only the Channel class can be updated.
+    </dd>
 
     <dt>mythtv_chanmaint.py</dt>
     <dd><p>Provides a utility for maintaining XMLTVIDs and (eventually) channel icons in MythTV.</p>
@@ -17,22 +23,36 @@ mythtv_cli_extensions provides two utilities and a couple of python libraries fo
     </dd>
 </dl>
 
+The current functionality is enough to allow a simple shell script to be written that will allow the channels to be put back to their correct state after a re-scan.
+
 The help text for each is included below.
 
-ToDo:
-
-* Save and restore icon definitions
-* Provide a way to modify CallSigns, Names and Visibility
-
-## Python Libraries
+## Python3 Libraries
 
 <dl>
-    <dt>MythTVService</dt>
+    <dt>MythTVServiceAPI</dt>
     <dd>Provides low level access to the MythTV web services using the suds-jurko module.<br/>
         See https://bitbucket.org/jurko/suds for information about suds-jurko.</dd>
-    <dt>MythTVObject</dl>
-    <dd>Provides an easy way to write entries back to the MythTV backend, taking care of naming inconsistencies, etc.  Currently on Channel is supported.</dd>
+    <dt>MythTVQuerySet</dt>
+    <dd>Provides a django like interface for query the backend.</dd>
+    <dt>MythTVClass</dl>
+    <dd>Provides an easy way to access and write entries back to the MythTV backend, taking care of naming inconsistencies, etc.  Currently on Channel is supported.</dd>
 </dl>
+
+An example of retrieving all channels with call sign "ABC" and updating the first record:
+
+  from mythtvlib.object import MythTVQuerySet
+  
+  # Get a QuerySet on the Channel class
+  query_set = MythTVQuerySet("Channel")
+  # Filter records with CallSign equal to "ABC"
+  query_set = query_set.filter(CallSign="^ABC$")  # This is a regular expression, and we don't want callsigns containing "ABC"
+  matching_records = query_set.all()
+  print(matching_records)
+  # Update the first record's name to be "DEF"
+  query_set[0].ChannelName = "DEF"
+  query_set[0].save()
+
 
 ## Dependencies
 
@@ -41,38 +61,62 @@ mythtv_cli_extensions depend on the suds-jurko module (https://bitbucket.org/jur
     [sudo] pip install suds-jurko
 
 
+## ToDo:
+
+LOTS!
+
+* Save and restore icon definitions
+** This can be done using mythtv_cli.py update, but must be manually maintained
+* Extend the library to handle all the classes defined by the web services
+
 # mythtv_cli.py help
 
 <pre>
-usage: mythtv_cli.py [-h] [--post] service operation [operation ...]
+usage: mythtv_cli.py [-h] [--post] [--hostname HOSTNAME] [--server-port PORT]
+                     [-y] [--version]
+                     {dump,update} params [params ...]
 
 MythTV Web Services CLI
 
 positional arguments:
-  service     MythTV Service Name
-  operation   MythTV Service Operation and parameters
+  {dump,update}        Maintenance command, see below
+  params               Command parameter(s)
 
 optional arguments:
-  -h, --help  show this help message and exit
-  --post      Show POST operations with operation help
+  -h, --help           show this help message and exit
+  --post               Show POST operations with operation help
+  --hostname HOSTNAME  MythTV Backend hostname
+  --server-port PORT   MythTV Backend services port
+  -y                   Execute updates without user confirmation
+  --version            show program's version number and exit
+
+mythtv_cli.py has 2 basic use cases:
+
+    mythtv_cli.py dump &lt;service&gt; &lt;operation&gt; &lt;key...&gt;
+        Print the results of the requested service/operation
+    mythtv_cli.py update &lt;class name&gt; &lt;filter field&gt; &lt;filter regex&gt; &lt;update field&gt; &lt;update value&gt;
+        Update the records matching the supplied regular expression in the
+        requested class.
 
 Valid Services: Capture, Channel, Content, DVR, Frontend, Guide, Myth, Video
-    
+
+Valid Class Names: Channel
+
 Additional Help:
 
-   mythtv_cli.py &lt;service&gt; help # for help on individual services.
-   mythtv_cli.py &lt;service&gt; &lt;operation&gt; help # for detailed parameter information
+   mythtv_cli.py dump &lt;service&gt; help # for help on individual services.
+   mythtv_cli.py dump &lt;service&gt; &lt;operation&gt; help # for detailed parameter information
+
     
-Documentation: https://www.mythtv.org/wiki/Services_API
+MythTV Web Services Documentation: https://www.mythtv.org/wiki/Services_API
 </pre>
 
 # mythtv_chanmaint.py help
 
 <pre>
 usage: mythtv_chanmaint.py [-h] [--xmltv XMLTV] [--hostname HOSTNAME]
-                           [--server-port PORT]
-                           [--frontend-port FRONTEND_PORT] [--config CONFIG]
-                           [--create-config] [-y]
+                           [--server-port PORT] [--config CONFIG]
+                           [--create-config] [-y] [--version]
                            {list,update_xmltvids} [params]
 
 MythTV Channel Maintenance
@@ -87,11 +131,10 @@ optional arguments:
   --xmltv XMLTV         XMLTV data file
   --hostname HOSTNAME   MythTV Backend hostname (localhost)
   --server-port PORT    MythTV Backend services port (6544)
-  --frontend-port FRONTEND_PORT
-                        MythTV Frontend services port (1234)
   --config CONFIG       Configuration data
   --create-config       Create a new configuration data file
   -y                    Execute updates without user confirmation
+  --version             show program's version number and exit
 
 mythtv_chanmaint.py has 3 basic use cases:
 
@@ -99,7 +142,7 @@ mythtv_chanmaint.py has 3 basic use cases:
         List the channel and XMLTVID data contained in the xmltv file
     mythtv_chanmaint.py list channels
         List the channel data contained in the MythTV backend
-    mythtv_chanmaint.py update_xmltvids --xmltv file.name [-y] [--replace]
+    mythtv_chanmaint.py update_xmltvids --xmltv file.name [-y]
         Update Channel XMLTVIDs, see below
 
 Updating Channel XMLTVIDs
@@ -114,8 +157,8 @@ mapping from all CallSign variations as defined in the users settings file
 backend.  If -y is not supplied the proposed updates are listed and the user
 is asked for confirmation prior to updating the backend.
 
-Typical Workflow
-----------------
+Typical XMLTVID Workflow
+------------------------
 
 The typical workflow is to recognise that you aren't getting EPG data for all
 your channels, or that you need to re-scan for whatever reason.
@@ -154,6 +197,5 @@ your channels, or that you need to re-scan for whatever reason.
 
    You should then be able to see the correct / additional EPG data in the
    MythTV program guide.
-   
 </pre>
 

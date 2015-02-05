@@ -3,7 +3,7 @@
 #
 # This file should not be modified by users.
 #
-# Custom configuration should be placed in mythtv_chanmaint_settings.py
+# Custom configuration should be placed in mythtv_cli_settings.py
 #
 LOGGING = {
     'version': 1,
@@ -42,7 +42,7 @@ LOGGING = {
     },
     'root' : {
         'handlers' : ['rotate', 'console'],
-        'level' : 'INFO',
+        'level' : 'DEBUG',
     }
 }
 
