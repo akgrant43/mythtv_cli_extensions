@@ -7,7 +7,7 @@
 # tests = list(tuple(name, command, expected stdout, expected stderr))
 #
 tests = [
-("list xmltv myth-fillcz.xml", "bin/mythtv_chanmaint.py list xmltv",
+("list xmltv", "bin/mythtv_chanmaint.py list xmltv",
 """CallSign             XMLTVID                                                         
 -----------------------------------------
 Fanda                20144.port.cz                                                   
