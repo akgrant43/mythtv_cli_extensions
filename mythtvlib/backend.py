@@ -5,8 +5,6 @@ This is very basic at the moment, it just stores the backend location and
 returns the requested service.
 """
 
-from collections import defaultdict
-
 from mythtvlib.settings import settings
 from mythtvlib.services import MythTVServiceAPI
 
