@@ -12,9 +12,11 @@ TODO:
   MythTV is incorrect and needs to be fixed."""
 
 from lxml.etree import parse
-from os.path import exists
+from os.path import exists, join
 from urllib.request import urlopen
 from suds.client import Client
+
+from mythtvlib.utils import get_tmp_dir
 
 class MythTVServiceException(Exception):
     pass
@@ -28,7 +30,8 @@ class MythTVServiceAPI(object):
         self.service_name = service_name
         self.backend = backend
         self.wsdl = None
-        self.wsdl_fname = "/tmp/MythTV-{0}.wsdl".format(service_name)
+        self.wsdl_fname = join(get_tmp_dir(),
+                               "MythTV-{0}.wsdl".format(service_name))
         self.client = self._client_for(service_name)
         self.service = self.client.service
         self.wsdl_namespaces = self.wsdl.getroot().nsmap

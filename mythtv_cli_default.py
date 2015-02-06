@@ -34,10 +34,10 @@ LOGGING = {
         },
     },
     'loggers': {
-        'pmlib': {
+        'mythtvlib': {
             'handlers' : ['rotate', 'console'],
-            'propagate' : False,
-            'level' : 'INFO',
+            'propagate' : True,
+            'level' : 'DEBUG',
         },
     },
     'root' : {
@@ -46,6 +46,12 @@ LOGGING = {
     }
 }
 
+# See the mythtv_clie_settings_example for a description of XMLTV_CALLSIGNS
 XMLTV_CALLSIGNS = {}
+
+# Default hostname and port for the MythTV backend
 HOSTNAME='localhost'
 PORT=6544
+
+# Default tmp directories
+TMP_DIRS = ['/tmp/']
