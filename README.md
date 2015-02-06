@@ -62,6 +62,11 @@ mythtv_cli_extensions depend on the suds-jurko module (https://bitbucket.org/jur
 
     [sudo] pip install suds-jurko
 
+The automated tests also use fuzzywuzzy, which has better performance with python-Levenshtein.
+
+To install all modules:
+
+    [sudo] pip install -r pip.requirements
 
 ## ToDo:
 
