@@ -55,3 +55,4 @@ PORT=6544
 
 # Default tmp directories
 TMP_DIRS = ['/tmp/']
+TMP_DIR_NAME = 'MythTV_CLI'

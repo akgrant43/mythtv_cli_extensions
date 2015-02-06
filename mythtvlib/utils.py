@@ -14,7 +14,7 @@ def get_tmp_dir():
     for d in settings.TMP_DIRS:
         if not isdir(d):
             break
-        tmp_dir = join(d, 'MythTV_CLI')
+        tmp_dir = join(d, settings.TMP_DIR_NAME)
         if not isdir(tmp_dir):
             mkdir(tmp_dir)
         break
