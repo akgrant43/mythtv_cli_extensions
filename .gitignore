@@ -55,3 +55,6 @@ target/
 
 # Backups
 *~
+
+# User defined files
+mythtv_cli_settings.py
