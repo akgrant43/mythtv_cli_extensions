@@ -23,7 +23,7 @@ LOGGING = {
             'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
             'formatter': 'verbose',
-            'filename': 'mythtv_chanmaint.log',
+            'filename': 'mythtv_cli.log',
             'maxBytes': 10000000,
             'backupCount': 5
             },
