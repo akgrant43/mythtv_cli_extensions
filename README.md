@@ -67,8 +67,6 @@ mythtv_cli_extensions depend on the suds-jurko module (https://bitbucket.org/jur
 
 LOTS!
 
-* Add automated testing
-  * There are some automated tests now, but they are there because they were easy to implement, not because they test something useful.
 * Save and restore icon definitions
   * This can be done using mythtv_cli.py update, but must be manually maintained
 * Extend the library to handle all the classes defined by the web services
@@ -134,7 +132,7 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  --xmltv XMLTV         XMLTV data file
+  --xmltv XMLTV         XMLTV data file (default=tvgrab.xml)
   --hostname HOSTNAME   MythTV Backend hostname (localhost)
   --server-port PORT    MythTV Backend services port (6544)
   --config CONFIG       Configuration data

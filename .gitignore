@@ -58,3 +58,5 @@ target/
 
 # User defined files
 mythtv_cli_settings.py
+site_tests.py
+tv_grab.xml

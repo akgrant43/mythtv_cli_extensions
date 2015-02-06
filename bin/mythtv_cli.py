@@ -71,12 +71,13 @@ def update(args):
             return
     fmt_string = "Updated: {obj} {field}: '{old}' => '{new}'"
     for rec in update_records:
+        old_value = getattr(rec, update_field)
         setattr(rec, update_field, update_value)
         rec.save()
         logger.info(fmt_string.format(
             obj=str(rec),
             field=update_field,
-            old=getattr(rec, update_field),
+            old=old_value,
             new=update_value))
     logger.info("Updated {0} record(s)".format(len(update_records)))
     return

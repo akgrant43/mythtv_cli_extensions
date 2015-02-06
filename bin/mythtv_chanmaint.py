@@ -74,7 +74,7 @@ class MythTVChannelMaintenance(object):
         return self._channels
 
     def require_xmltv(self):
-        "Check that the XMLTV file name has been supplied and exists"
+        "Check that the XMLTV file name exists"
         if self.args.xmltv is None:
             msg = "--xmltv not specified"
             print(msg)
@@ -280,8 +280,8 @@ your channels, or that you need to re-scan for whatever reason.
                                      formatter_class=argparse.RawDescriptionHelpFormatter,
                                      epilog=epilog)
     parser.add_argument('--xmltv',
-                        default=None,
-                        help='XMLTV data file')
+                        default='tv_grab.xml',
+                        help='XMLTV data file (default=tvgrab.xml)')
     parser.add_argument('--hostname',
                         default=None,
                         help='MythTV Backend hostname (localhost)')
