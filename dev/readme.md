@@ -72,4 +72,6 @@ LOTS!
   * This can be done using mythtv_cli.py update, but must be manually maintained
 * Extend the library to handle all the classes defined by the web services
 * Extend filter() to do proper numeric comparisons
+* Move temp files to their own directory
+
 
