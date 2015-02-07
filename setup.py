@@ -7,7 +7,7 @@ if sys.version < "3.4.0":
 
 setup(
     name = "mythtv_cli_extensions",
-    version = "0.1.1",
+    version = "0.2.0",
     description = "MythTV CLI Extensions",
     author = "Alistair Grant",
     author_email = "akgrant0710@gmail.com",
