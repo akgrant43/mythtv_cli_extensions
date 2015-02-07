@@ -1,4 +1,5 @@
 # mythtv_cli_extensions
+
 MythTV python CLI utilities and classes
 
 First: Many thanks to the developers of the MythTV project for making such a great piece of software available.  The mythtv_cli_extensions are my personal work and any shortcomings, bugs, problems, etc. are mine and no reflection on the MythTV developers.
@@ -10,14 +11,15 @@ WARNING: This software is still in the early development stage, there's no guara
 ## Utilities
 
 <dl>
-    <dt>mythtv_cli.py</dt>
+    <dt>mythtv_cli</dt>
     <dd>Provides a command line utility for:
     <ul>
         <li>calling the MythTV web services and exploring the database a bit.</li>
         <li>updating the database.  Only fields that are considered user maintainable can be modifed.  Currently only the Channel class can be updated.
+    </ul>
     </dd>
 
-    <dt>mythtv_chanmaint.py</dt>
+    <dt>mythtv_chanmaint</dt>
     <dd><p>Provides a utility for maintaining XMLTVIDs and (eventually) channel icons in MythTV.</p>
         <p>This is typically used to restore XMLTVIDs after a channel re-scan has been performed.</p>
     </dd>
@@ -56,34 +58,37 @@ query_set[0].save()
 ```
 
 
-## Dependencies
+## Installation
 
-mythtv_cli_extensions depend on the suds-jurko module (https://bitbucket.org/jurko/suds).  The simplest way to install suds-jurko is:
+mythtv_cli_extensions can be installed in the normal python fashion:
 
-    [sudo] pip install suds-jurko
+    [sudo] python3 setup.py install
+
+The run-time dependency, suds-jurko, should be installed automatically.
 
 The automated tests also use fuzzywuzzy, which has better performance with python-Levenshtein.
 
-To install all modules:
+These are not installed automatically:
 
-    [sudo] pip install -r pip.requirements
+    [sudo] pip3 install fuzzywuzzy
+    [sudo] pip3 install python-Levenshtein
 
 ## ToDo:
 
 LOTS!
 
 * Save and restore icon definitions
-  * This can be done using mythtv_cli.py update, but must be manually maintained
+  * This can be done using mythtv_cli.py update, but must be manually scripted
 * Extend the library to handle all the classes defined by the web services
 * Extend filter() to do proper numeric comparisons
 
 
-# mythtv_cli.py help
+# mythtv_cli help
 
 ```
-usage: mythtv_cli.py [-h] [--post] [--hostname HOSTNAME] [--server-port PORT]
-                     [-y] [--version]
-                     {dump,update} params [params ...]
+usage: mythtv_cli [-h] [--post] [--hostname HOSTNAME] [--server-port PORT]
+                  [-y] [--version]
+                  {dump,update} params [params ...]
 
 MythTV Web Services CLI
 
@@ -99,11 +104,11 @@ optional arguments:
   -y                   Execute updates without user confirmation
   --version            show program's version number and exit
 
-mythtv_cli.py has 2 basic use cases:
+mythtv_cli has 2 basic use cases:
 
-    mythtv_cli.py dump &lt;service&gt; &lt;operation&gt; &lt;key...&gt;
+    mythtv_cli dump &lt;service&gt; &lt;operation&gt; &lt;key...&gt;
         Print the results of the requested service/operation
-    mythtv_cli.py update &lt;class name&gt; &lt;filter field&gt; &lt;filter regex&gt; &lt;update field&gt; &lt;update value&gt;
+    mythtv_cli update &lt;class name&gt; &lt;filter field&gt; &lt;filter regex&gt; &lt;update field&gt; &lt;update value&gt;
         Update the records matching the supplied regular expression in the
         requested class.
 
@@ -113,20 +118,20 @@ Valid Class Names: Channel
 
 Additional Help:
 
-   mythtv_cli.py dump &lt;service&gt; help # for help on individual services.
-   mythtv_cli.py dump &lt;service&gt; &lt;operation&gt; help # for detailed parameter information
+   mythtv_cli dump &lt;service&gt; help # for help on individual services.
+   mythtv_cli dump &lt;service&gt; &lt;operation&gt; help # for detailed parameter information
 
     
 MythTV Web Services Documentation: https://www.mythtv.org/wiki/Services_API
 ```
 
-# mythtv_chanmaint.py help
+# mythtv_chanmaint help
 
 ```
-usage: mythtv_chanmaint.py [-h] [--xmltv XMLTV] [--hostname HOSTNAME]
-                           [--server-port PORT] [--config CONFIG]
-                           [--create-config] [-y] [--version]
-                           {list,update_xmltvids} [params]
+usage: mythtv_chanmaint [-h] [--xmltv XMLTV] [--hostname HOSTNAME]
+                        [--server-port PORT] [--config CONFIG]
+                        [--create-config] [-y] [--version]
+                        {list,update_xmltvids} [params]
 
 MythTV Channel Maintenance
 
@@ -145,13 +150,13 @@ optional arguments:
   -y                    Execute updates without user confirmation
   --version             show program's version number and exit
 
-mythtv_chanmaint.py has 3 basic use cases:
+mythtv_chanmaint has 3 basic use cases:
 
-    mythtv_chanmaint.py list xmltv --xmltv file.name
+    mythtv_chanmaint list xmltv --xmltv file.name
         List the channel and XMLTVID data contained in the xmltv file
-    mythtv_chanmaint.py list channels
+    mythtv_chanmaint list channels
         List the channel data contained in the MythTV backend
-    mythtv_chanmaint.py update_xmltvids --xmltv file.name [-y]
+    mythtv_chanmaint update_xmltvids --xmltv file.name [-y]
         Update Channel XMLTVIDs, see below
 
 Updating Channel XMLTVIDs
