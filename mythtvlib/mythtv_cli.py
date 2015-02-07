@@ -35,7 +35,7 @@ def update(args):
         msg = "Expect 5 parameters, got {0}".format(len(args.params))
         logger.fatal(msg)
         exit(1)
-    class_name = "MythTV" + args.params[0]
+    class_name   = args.params[0]
     filter_field = args.params[1]
     filter_regex = args.params[2]
     update_field = args.params[3]
@@ -98,7 +98,7 @@ def main():
 
 Valid Services: {services}
 
-Valid Class Names: Channel
+Valid Class Names: ChannelInfo
 
 Additional Help:
 

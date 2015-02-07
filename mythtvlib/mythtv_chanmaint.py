@@ -60,7 +60,7 @@ class MythTVChannelMaintenance(object):
         if self._channels is not None:
             return self._channels
         try:
-            self._channels = MythTVQuerySet('MythTVChannel').all()
+            self._channels = MythTVQuerySet('ChannelInfo').all()
         except (ConnectionRefusedError, URLError) as e:
             if self._backend.hostname == "localhost":
                 logger.info("hostname=='localhost' - has it been set in mythtv_cli_settings?")

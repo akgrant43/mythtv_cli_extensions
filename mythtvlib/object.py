@@ -4,8 +4,8 @@ from copy import copy
 from mythtvlib.backend import MythTVBackend
 
 CLASS_DEFINITIONS = {
-    'Channel': {
-        'name'            : 'Channel',
+    'ChannelInfo': {
+        'name'            : 'ChannelInfo',
         'service'         : 'Channel',
         'get_operation'   : 'GetChannelInfo',
         'primary_key'     : ('ChanId',),
@@ -200,11 +200,11 @@ class MythTVClass(object):
 
 
 
-class MythTVChannel(MythTVClass):
+class ChannelInfo(MythTVClass):
 
     @classmethod
     def definition(cls):
-        return CLASS_DEFINITIONS['Channel']
+        return CLASS_DEFINITIONS['ChannelInfo']
 
     @classmethod
     def videosources(cls, backend=None):
