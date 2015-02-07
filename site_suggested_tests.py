@@ -7,7 +7,7 @@
 # tests = list(tuple(name, command, expected stdout, expected stderr))
 #
 tests = [
-("list xmltv", "bin/mythtv_chanmaint.py list xmltv",
+("list xmltv", "mythtv_chanmaint list xmltv",
 """CallSign             XMLTVID                                                         
 -----------------------------------------
 Fanda                20144.port.cz                                                   
@@ -25,7 +25,7 @@ TV Barrandov         20121.port.cz
 ČT2                  20005.port.cz                                                   
 ČT24                 20052.port.cz""", ""),
 
-("list channels", "bin/mythtv_chanmaint.py list channels",
+("list channels", "mythtv_chanmaint list channels",
 """Id    Src CallSign             ChanNum Name                 Visible XMLTVID              Icon URL            
 ----------------------------------------------------------------------------------------------------
 1016  1   SMICHOV              16      SMICHOV              1                                                
@@ -121,12 +121,12 @@ TV Barrandov         20121.port.cz
 1039  1   Prima ZOOM           39      Prima Zoom           1       20151.port.cz        prima_zoom_cz.png   
 1774  1   Prima ZOOM           774     Prima Zoom           1       20151.port.cz        prima_zoom_cz.png""", ""),
 
-("update V1 name to V1a", 'bin/mythtv_cli.py update -y Channel CallSign "^V1\$" ChannelName "V1a"', "",
+("update V1 name to V1a", 'mythtv_cli update -y Channel CallSign "^V1\$" ChannelName "V1a"', "",
 """INFO: update Channel CallSign '^V1$' ChannelName 'V1a'
 INFO: Updated: Channel(ChanId=4585) ChannelName: 'V1' => 'V1a'
 INFO: Updated 1 record(s)"""),
 
-("dump Channel 4585 V1a", "bin/mythtv_cli.py dump Channel GetChannelInfo 4585",
+("dump Channel 4585 V1a", "mythtv_cli dump Channel GetChannelInfo 4585",
 """(ChannelInfo){
    _serializerVersion = "1.1"
    _version = "1.06"
@@ -159,12 +159,12 @@ INFO: Updated 1 record(s)"""),
    Programs = ""
  }""", ""),
 
-("update V1a name to V1", 'bin/mythtv_cli.py update -y Channel CallSign "^V1\$" ChannelName "V1"', "",
+("update V1a name to V1", 'mythtv_cli update -y Channel CallSign "^V1\$" ChannelName "V1"', "",
 """INFO: update Channel CallSign '^V1$' ChannelName 'V1'
 INFO: Updated: Channel(ChanId=4585) ChannelName: 'V1a' => 'V1'
 INFO: Updated 1 record(s)"""),
 
-("dump Channel 4585 V1", "bin/mythtv_cli.py dump Channel GetChannelInfo 4585",
+("dump Channel 4585 V1", "mythtv_cli dump Channel GetChannelInfo 4585",
 """(ChannelInfo){
    _serializerVersion = "1.1"
    _version = "1.06"
@@ -197,7 +197,7 @@ INFO: Updated 1 record(s)"""),
    Programs = ""
  }""", ""),
 
-("update_xmltvids", "bin/mythtv_chanmaint.py update_xmltvids", "",
+("update_xmltvids", "mythtv_chanmaint update_xmltvids", "",
 """INFO: update_xmltvids: no updates required"""),
 
 ]

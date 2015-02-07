@@ -12,7 +12,7 @@
 # by updates to the software
 #
 
-from mythtv_cli_default import *
+from mythtvlib.mythtv_cli_default import *
 
 #
 # XMLTV CallSign Mapping

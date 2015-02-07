@@ -2,7 +2,7 @@
 # tests = list(tuple(name, command, expected result))
 #
 tests = [
-("Channel help", "bin/mythtv_cli.py dump Channel help",
+("Channel help", "mythtv_cli dump Channel help",
 """Supported Operations:
     FetchChannelsFromSource        SourceId, CardId, WaitForFinish
     GetChannelInfo                 ChanID
@@ -14,7 +14,7 @@ tests = [
     GetVideoSourceList             
     GetXMLTVIdList                 SourceID""", ""),
 
-("Myth help", "bin/mythtv_cli.py dump Myth help",
+("Myth help", "mythtv_cli dump Myth help",
 """Supported Operations:
     GetConnectionInfo              Pin
     GetHostName                    

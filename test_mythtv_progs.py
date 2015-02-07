@@ -1,5 +1,5 @@
 """
-Test the mythtv_cli.py command line
+Test the mythtv_cli & mythtv_chanmaint command lines
 """
 
 import unittest
@@ -50,11 +50,11 @@ class TestMythTVCommands(unittest.TestCase):
         return
 
     def test_cli_version(self):
-        """Check that the mythtv_cli.py command returns the expected version
+        """Check that the mythtv_cli command returns the expected version
         string"""
-        cmd = "bin/mythtv_cli.py --version"
+        cmd = "mythtv_cli --version"
         self.run_command(cmd)
-        expected = 'mythtv_cli.py version ' + __VERSION__
+        expected = 'mythtv_cli version ' + __VERSION__
         self.assertEqual(self.stdout, expected,
                          "Expected version '{0}', got '{1}'".format(
                             expected, self.stdout))
@@ -63,11 +63,11 @@ class TestMythTVCommands(unittest.TestCase):
         return
 
     def test_chanmaint_version(self):
-        """Check that the mythtv_chanmaint.py command returns the expected
+        """Check that the mythtv_chanmaint command returns the expected
         version string"""
-        cmd = "bin/mythtv_chanmaint.py --version"
+        cmd = "mythtv_chanmaint --version"
         self.run_command(cmd)
-        expected = 'mythtv_chanmaint.py version ' + __VERSION__
+        expected = 'mythtv_chanmaint version ' + __VERSION__
         self.assertEqual(self.stdout, expected,
                          "Expected version '{0}', got '{1}'".format(
                             expected, self.stdout))
@@ -77,18 +77,18 @@ class TestMythTVCommands(unittest.TestCase):
 
     def test_cli_help(self):
         "Check that --help produces a reasonable amount of text"
-        cmd = "bin/mythtv_cli.py --help"
+        cmd = "mythtv_cli --help"
         self.run_command(cmd)
         self.assertTrue(len(self.stdout) > 1000,
-                        "Not much help from mythtv_cli.py")
+                        "Not much help from mythtv_cli")
         return
 
     def test_chainmaint_help(self):
         "Check that --help produces a reasonable amount of text"
-        cmd = "bin/mythtv_chanmaint.py --help"
+        cmd = "mythtv_chanmaint --help"
         self.run_command(cmd)
         self.assertTrue(len(self.stdout) > 3000,
-                        "Not much help from mythtv_chanmaint.py")
+                        "Not much help from mythtv_chanmaint")
         return
 
     def run_test_file(self, filename):
@@ -152,7 +152,7 @@ class TestMythTVCommands(unittest.TestCase):
     def test_backend_version(self):
         """Check that the backend version is supported.
         Currently only 0.27"""
-        self.run_command('bin/mythtv_cli.py dump Myth ProfileText | grep -A 1 "\- version"')
+        self.run_command('mythtv_cli dump Myth ProfileText | grep -A 1 "\- version"')
         self.assertTrue('v0.27' in self.stdout,
                         "Couldn't find expected version in: '{0}'".format(
                             self.stdout))
