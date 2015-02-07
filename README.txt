@@ -48,19 +48,38 @@ Provides a python object representation of the back end web service
 objects, taking care of naming inconsistencies, etc. Currently on
 Channel is supported. Look at the version number if you're wondering.
 An example of retrieving all channels with call sign "ABC" and updating
-the first record:
+the first record (obviously this will most likely fail, unless you
+happen to have the ABC):
 
-    from mythtvlib.object import MythTVQuerySet
+    from mythtvlib.query import MythTVQuerySet
 
     # Get a QuerySet on the Channel class
-    query_set = MythTVQuerySet("MythTVChannel")
+    query_set = MythTVQuerySet("ChannelInfo")
     # Filter records with CallSign equal to "ABC"
     query_set = query_set.filter(CallSign="^ABC$")  # This is a regular expression, and we don't want callsigns containing "ABC"
     matching_records = query_set.all()
     print(matching_records)
     # Update the first record's name to be "DEF"
-    query_set[0].ChannelName = "DEF"
-    query_set[0].save()
+    channel = query_set[0]
+    channel.ChannelName = "DEF"
+    channel.save()
+
+This code demonstrates using the Profile class:
+
+    from mythtvlib.query import MythTVQuerySet
+
+    query_set = MythTVQuerySet("Profile")
+    # There's only one profile entry
+    profile = query_set.all()[0]
+    print("Backend version: {0}".format(profile.version))
+    print("Tuners: {0}".format(profile.tuners))
+    print("Channel Count: {0}".format(profile.channel_count))
+
+At the time I wrote this, on my system it produced:
+
+    Backend version: v0.27-193-g8ee257c
+    Tuners: {'DVB': 2}
+    Channel Count: 92
 
 Installation
 ------------
@@ -143,7 +162,7 @@ mythtv_cli help
 
     Valid Services: Capture, Channel, Content, DVR, Frontend, Guide, Myth, Video
 
-    Valid Class Names: Channel
+    Valid Class Names: ChannelInfo
 
     Additional Help:
 

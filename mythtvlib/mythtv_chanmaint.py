@@ -15,7 +15,7 @@ if isdir(join(proposed_path, 'mythtvlib')) and (proposed_path not in sys.path):
 
 from mythtvlib import __VERSION__
 from mythtvlib.backend import MythTVBackend
-from mythtvlib.object import MythTVQuerySet
+from mythtvlib.query import MythTVQuerySet
 
 from mythtvlib.settings import settings
 
