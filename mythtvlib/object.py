@@ -28,6 +28,13 @@ CLASS_DEFINITIONS = {
             'XMLTVID' : 'XMLTVID',
             'DefaultAuth' : 'DefaultAuthority'
             },
+        'keys' : ['ChanId', 'ChanNum', 'CallSign', 'IconURL', 'ChannelName',
+                  'MplexId', 'TransportId', 'ServiceId', 'NetworkId',
+                  'ATSCMajorChan' , 'ATSCMinorChan', 'Format', 'Modulation',
+                  'Frequency', 'FrequencyId', 'FrequencyTable', 'FineTune',
+                  'SIStandard', 'ChanFilters', 'SourceId', 'InputId',
+                  'CommFree', 'UseEIT', 'Visible', 'XMLTVID', 'DefaultAuth',
+                  'Programs'],
         'update_attributes' : ['ChanNum', 'CallSign', 'ChannelName',
                             'IconURL', 'Visible', 'XMLTVID']
         }
@@ -53,7 +60,7 @@ class MythTVQuerySet(object):
     def filter(self, **kwargs):
         "Add the supplied filter to the list."
         new_query = self.copy()
-        attributes = self.mythtv_class.attrib()
+        attributes = self.mythtv_class.keys()
         for k, v in kwargs.items():
             if k not in attributes:
                 raise MythTVObjectException(("Attempt to filter on" 
@@ -96,17 +103,36 @@ class MythTVQuerySet(object):
 class MythTVClass(object):
     """Abstract superclass to provide an object representation of a
     MythTV backend web service object"""
-    _local_vars = ["_backend", "_element", "_local_vars",
-                   "_definition"]
 
-    def __init__(self, element, backend=None):
-        self._element = element
-        self._definition = None
-        if backend is None:
-            self._backend = MythTVBackend.default()
-        else:
-            self._backend = backend
+    def __init__(self, *args, **kwargs):
+        # __setattr__ checks the value of _safe_mode and _definition,
+        # to avoid a chicken-and-egg situation, bypass __setattr__
+        self.__dict__['_safe_mode'] = False
+        self.__dict__['_definition'] = None
+        self._backend = MythTVBackend.default()
+        all_attributes = []
+        all_attributes.extend(self.__class__.keys())
+        all_attributes.extend(['_backend', '_safe_mode', '_definition'])
+        for k, v in kwargs.items():
+            if k in all_attributes:
+                setattr(self, k, v)
+            else:
+                raise TypeError('{0} is an invalid argument for {1}'.format(
+                            k, self._class_definition['name']))
         return
+
+    @classmethod
+    def from_element(cls, element, backend=None):
+        attributes = {}
+        # Transfer all attributes from the element,
+        # which is assumed to be a suds.sudsobject.Object
+        for k, v in element:
+            attributes[k] = v
+        new_object = cls(**attributes)
+        if backend is not None:
+            new_object._backend = backend
+        new_object._safe_mode = True
+        return new_object
 
     @classmethod
     def classname(cls, name):
@@ -125,9 +151,9 @@ class MythTVClass(object):
         raise MythTVObjectException("Subclass responsibility")
 
     @classmethod
-    def attrib(cls):
+    def keys(cls):
         "Answer the attribute names of the receiver"
-        return cls.definition()['post_mapping'].keys()
+        return cls.definition()['keys']
 
     def _service_api(self):
         "Answer the receivers service api"
@@ -135,34 +161,32 @@ class MythTVClass(object):
 
     def _class_definition(self):
         if self._definition is None:
-            self._definition = self.__class__.definition()
+            self.__dict__['_definition'] = self.__class__.definition()
         return self._definition
 
-    def __getattr__(self, name):
-        "Simply pass on any unknown attributes to the element"
-        return getattr(self._element, name)
-
     def __setattr__(self, name, value):
-        "Simply pass on any unknown attributes to the element"
-        if name in self._local_vars:
-            # _element is stored locally
-            self.__dict__[name] = value
-        else:
+        """Ensure that we don't update an attribute that is not marked user
+        modifiable.
+        
+        TODO: Implement a non-safe mode that allows all attributes to be
+        updated"""
+        if self._safe_mode:
             definition = self._class_definition()
-            if name not in definition['post_mapping'].keys():
-                raise MythTVObjectException(("Attempted to update unknown "
-                                             "attribute: {0}").format(name))
-            elif name not in definition['update_attributes']:
+            attributes = definition['keys']
+            update_attributes = definition['update_attributes']
+            if (name in attributes) and (name not in update_attributes):
                 raise MythTVObjectException(("Attempted to update read-only "
                                               "attribute: {0}").format(name))
-            setattr(self._element, name, value)
+        self.__dict__[name] = value
         return
 
     def save(self):
-        """Save the receiver on the backend"""
+        """Save the receiver on the backend.
+        The receiver must have all post attributes as we cannot assume
+        reasonable defaults (yet)"""
         kwargs = {}
         for obj_attr, upd_attr in self._class_definition()['post_mapping'].items():
-            kwargs[upd_attr] = self._element[obj_attr]
+            kwargs[upd_attr] = getattr(self, obj_attr)
         getattr(self._service_api().service, self._class_definition()['post_operation'])(**kwargs)
         return
 
@@ -218,6 +242,6 @@ class MythTVChannel(MythTVClass):
     @classmethod
     def all(cls, backend=None):
         """Answer all the receivers records fetched from the backend"""
-        all_records = [cls(c, backend) for c in \
-                       cls.all_channels(backend=backend)]
+        all_records = [cls.from_element(c, backend=backend) \
+                       for c in cls.all_channels(backend=backend)]
         return all_records
