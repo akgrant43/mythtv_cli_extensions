@@ -1,9 +1,13 @@
 # mythtv_cli_extensions setup
+import sys
 from setuptools import setup
+
+if sys.version < "3.4.0":
+    raise ValueError("mythtv_cli_extensions require python 3.4.0 or later")
 
 setup(
     name = "mythtv_cli_extensions",
-    version = "0.1.0",
+    version = "0.1.1",
     description = "MythTV CLI Extensions",
     author = "Alistair Grant",
     author_email = "akgrant0710@gmail.com",
@@ -17,4 +21,12 @@ setup(
             'mythtv_chanmaint = mythtvlib.mythtv_chanmaint:main',
         ],
     },
+    classifiers = [
+        'Development Status :: 3 - Alpha',
+        'Environment :: Console',
+        'License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)',
+        'Programming Language :: Python :: 3 :: Only',
+        'Programming Language :: Python :: 3.4',
+        'Topic :: Utilities'
+    ]
 )

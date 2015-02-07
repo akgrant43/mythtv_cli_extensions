@@ -60,6 +60,30 @@ query_set[0].save()
 
 ## Installation
 
+mythtv_cli_extensions currently requires Python 3.4.0 or later.
+It will probably work on 3.3, but as I haven't been able to test it
+the check is for 3.4.0.  If a developer would like to confirm that it runs
+under 3.3 I'll update the check.
+
+mythtv_cli_extensions has the following dependencies:
+
+* lxml
+* setuptools
+* suds-jurko
+* fuzzywuzzy (automated tests only)
+* python-Levenshtein (automated tests only, optional)
+
+On Ubuntu only the first two need to be explicitly installed to use
+mythtv_cli_extensions:
+
+    sudo apt-get install python3-lxml
+    sudo apt-get install python3-setuptools
+
+To install the two automated test dependencies:
+
+    [sudo] pip3 install fuzzywuzzy
+    [sudo] pip3 install python-Levenshtein
+
 mythtv_cli_extensions can be installed in the normal python fashion:
 
     [sudo] python3 setup.py install
@@ -70,8 +94,6 @@ The automated tests also use fuzzywuzzy, which has better performance with pytho
 
 These are not installed automatically:
 
-    [sudo] pip3 install fuzzywuzzy
-    [sudo] pip3 install python-Levenshtein
 
 ## ToDo:
 
