@@ -2,12 +2,14 @@
 import sys
 from setuptools import setup
 
+import mythtvlib
+
 if sys.version < "3.4.0":
     raise ValueError("mythtv_cli_extensions require python 3.4.0 or later")
 
 setup(
     name = "mythtv_cli_extensions",
-    version = "0.2.0",
+    version = mythtvlib.__VERSION__,
     description = "MythTV CLI Extensions",
     author = "Alistair Grant",
     author_email = "akgrant0710@gmail.com",
