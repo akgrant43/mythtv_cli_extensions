@@ -4,7 +4,7 @@ import argparse
 #import logging
 import logging.config
 import sys
-from os.path import isdir, abspath, dirname, realpath, join, basename
+from os.path import isdir, abspath, dirname, realpath, join, basename, exists
 from urllib.error import URLError
 
 
@@ -14,7 +14,7 @@ proposed_path = abspath(join(mydir, '..'))
 if isdir(join(proposed_path, 'mythtvlib')) and (proposed_path not in sys.path):
     sys.path.append(proposed_path)
 
-from mythtvlib import __VERSION__
+from mythtvlib import __VERSION__, config_file_name
 from mythtvlib.backend import MythTVBackend
 from mythtvlib.query import MythTVQuerySet
 
@@ -84,6 +84,92 @@ def update(args):
 
 
 
+def gen_config(args):
+    "Generate a config file with hostname and port populated"
+    if exists(config_file_name):
+        msg = ("mythtv_cli_settings.py already exists.  "
+               "Please rename or remove this file before generating a "
+               "new config file.")
+        logging.error(msg)
+        exit(1)
+    have_details = False
+    while not have_details:
+        if args.hostname is None:
+            hostname = input("Enter MythTV Backend hostname [localhost]: ")
+        else:
+            hostname = args.hostname
+        if args.port is None:
+            port = input("Enter MythTV Backend port [6544]: ")
+        else:
+            port = args.port
+        # Test the config by getting the backend version number
+        try:
+            print("Confirming connection to the MythTV backend.")
+            print("This could take a while...")
+            query_set = MythTVQuerySet("Profile")
+            mythtv = query_set.all()[0]
+            have_details = True
+        except (ConnectionRefusedError, URLError) as e:
+            # Ensure that the user is prompted for a new backend location
+            args.hostname = None
+            args.port = None
+            print("Error: {0}".format(e))
+            msg = ("Unable to connect backend.  "
+                   "Please confirm your connection details, that the backend is "
+                   "running and try again.")
+            print(msg)
+    print("Confirmed connection to MythTV:")
+    print("   Backend branch: {0}".format(mythtv.branch))
+    print("   Version:        {0}\n".format(mythtv.version))
+    print("Generating config...")
+    config_string1 = """
+#
+# mythtv_chainmaint_settings_example.py
+#
+# mythtv_chanmaint configuration, i.e.:
+#
+# * Logging details
+# * XMLTV callsign mapping
+#
+# Copy this file to mythtv_cli_settings.py and modify.
+#
+# DO NOT use mythtv_cli_settings_example.py directly, it will be overwritten
+# by updates to the software
+#
+
+from mythtvlib.mythtv_cli_default import *
+
+#
+# XMLTV CallSign Mapping
+#
+# This table maps the CallSigns as provided in the XMLTV file to
+# one or more CallSigns as provided in the MythTV backend.
+#
+# Note:
+# * It isn't necessary to specify channels where the callsigns match.
+# * See mythtv_cli_settings_example.py for additional comments and an example.
+# * The example isn't meant to be complete, if you live in the Czech Republic,
+#   you will still need to update this.
+#
+XMLTV_CALLSIGNS = {
+#   XMLTV callsign         : MythTV CallSign(s)
+# e.g.
+#   "ČT sport"             : ["CT sport", "CT sport HD"],
+#
+    }
+
+# Backend hostname"""
+    config_string2 = """
+HOSTNAME={hostname}
+PORT={port}
+""".format(hostname=hostname, port=port)
+    with open(config_file_name, 'w') as fp:
+        fp.write(config_string1)
+        fp.write(config_string2)
+    return
+
+
+
 def main():
     logger.debug("Starting")
     services_string = ", ".join(MythTVBackend.services())
@@ -114,10 +200,10 @@ MythTV Web Services Documentation: https://www.mythtv.org/wiki/Services_API
                                      formatter_class=argparse.RawDescriptionHelpFormatter,
                                      epilog=epilog)
     parser.add_argument('command',
-                        choices=['dump', 'update'],
+                        choices=['dump', 'update', 'gen_config'],
                         help="Maintenance command, see below")
     parser.add_argument('params',
-                        nargs='+',
+                        nargs='*',
                         help="Command parameter(s)")
     parser.add_argument('--post', action='store_true',
                         default=False,
@@ -159,6 +245,8 @@ MythTV Web Services Documentation: https://www.mythtv.org/wiki/Services_API
             print(resp)
     elif args.command == 'update':
         update(args)
+    elif args.command == 'gen_config':
+        gen_config(args)
     else:
         # argparse should catch this before we get here
         raise MythTVCLIException("Unknown command: {0}".format(args.command))
