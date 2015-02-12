@@ -132,24 +132,27 @@ LOTS!
 ```
 usage: mythtv_cli [-h] [--post] [--hostname HOSTNAME] [--server-port PORT]
                   [-y] [--version]
-                  {dump,update} params [params ...]
+                  {dump,update,generate} params [params ...]
 
 MythTV Web Services CLI
 
 positional arguments:
-  {dump,update}        Maintenance command, see below
-  params               Command parameter(s)
+  {dump,update,generate}
+                        Maintenance command, see below
+  params                Command parameter(s)
 
 optional arguments:
-  -h, --help           show this help message and exit
-  --post               Show POST operations with operation help
-  --hostname HOSTNAME  MythTV Backend hostname
-  --server-port PORT   MythTV Backend services port
-  -y                   Execute updates without user confirmation
-  --version            show program's version number and exit
+  -h, --help            show this help message and exit
+  --post                Show POST operations with operation help
+  --hostname HOSTNAME   MythTV Backend hostname
+  --server-port PORT    MythTV Backend services port
+  -y                    Execute updates without user confirmation
+  --version             show program's version number and exit
 
-mythtv_cli has 2 basic use cases:
+mythtv_cli has 3 basic use cases:
 
+    mythtv_cli generate config
+        Generate a basic mythtv_cli_settings.py file
     mythtv_cli dump &lt;service&gt; &lt;operation&gt; &lt;key...&gt;
         Print the results of the requested service/operation
     mythtv_cli update &lt;class name&gt; &lt;filter field&gt; &lt;filter regex&gt; &lt;update field&gt; &lt;update value&gt;
