@@ -174,8 +174,10 @@ def main():
     logger.debug("Starting")
     services_string = ", ".join(MythTVBackend.services())
     epilog = """
-{prog} has 2 basic use cases:
+{prog} has 3 basic use cases:
 
+    {prog} generate config
+        Generate a basic {config_fn} file
     {prog} dump <service> <operation> <key...>
         Print the results of the requested service/operation
     {prog} update <class name> <filter field> <filter regex> <update field> <update value>
@@ -195,16 +197,11 @@ Additional Help:
 MythTV Web Services Documentation: https://www.mythtv.org/wiki/Services_API
 """.format(
             services=services_string,
-            prog=basename(sys.argv[0]))
+            prog=basename(sys.argv[0]),
+            config_fn=config_file_name)
     parser = argparse.ArgumentParser(description="MythTV Web Services CLI",
                                      formatter_class=argparse.RawDescriptionHelpFormatter,
                                      epilog=epilog)
-    parser.add_argument('command',
-                        choices=['dump', 'update', 'gen_config'],
-                        help="Maintenance command, see below")
-    parser.add_argument('params',
-                        nargs='*',
-                        help="Command parameter(s)")
     parser.add_argument('--post', action='store_true',
                         default=False,
                         help='Show POST operations with operation help')
@@ -220,6 +217,12 @@ MythTV Web Services Documentation: https://www.mythtv.org/wiki/Services_API
                         help="Execute updates without user confirmation")
     parser.add_argument('--version',
                         action='version',version='%(prog)s version '+ __VERSION__)
+    parser.add_argument('command',
+                        choices=['dump', 'update', 'generate'],
+                        help="Maintenance command, see below")
+    parser.add_argument('params',
+                        nargs='+',
+                        help="Command parameter(s)")
     args = parser.parse_args()
 
     backend = MythTVBackend.default(hostname=args.hostname, port=args.port)
@@ -245,7 +248,9 @@ MythTV Web Services Documentation: https://www.mythtv.org/wiki/Services_API
             print(resp)
     elif args.command == 'update':
         update(args)
-    elif args.command == 'gen_config':
+    elif args.command == 'generate':
+        if args.params[0] != 'config':
+            msg = "Unknown generation command: {0}".format(args.params[0])
         gen_config(args)
     else:
         # argparse should catch this before we get here
