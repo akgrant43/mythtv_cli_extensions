@@ -45,7 +45,7 @@ class MythTVQuerySet(object):
             filtered_records = []
             for rec in self._records:
                 for f in self._filters:
-                    if f[2].search(getattr(rec, f[0])):
+                    if f[2].search(str(getattr(rec, f[0]))):
                         filtered_records.append(rec)
             self._records = filtered_records
         return
