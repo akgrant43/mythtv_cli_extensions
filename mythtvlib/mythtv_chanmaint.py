@@ -90,14 +90,19 @@ class MythTVChannelMaintenance(object):
         getattr(self, self.args.command)(self.args.params)
         return
 
-    def list(self, param):
+    def list(self, params):
         "List the XMLTV or MythTV channel data"
+        if len(params) != 1:
+            logger.fatal("Expecting only 1 parameter, got: {0}".format(params))
+            exit(1)
+        param = params[0]
         if param == "xmltv":
             self.list_xmltv()
         elif param == "channels":
             self.list_channels()
         else:
-            raise MythTVMaintenanceException("Unknown list parameter: {0}".format(param))
+            logger.fatal("Unknown list parameter: {0}".format(param))
+            exit(1)
         return
 
     def list_channels(self):
@@ -161,7 +166,21 @@ class MythTVChannelMaintenance(object):
                     self._callsign_map[alternate] = xmltvid
         return self._callsign_map
 
-    def update_xmltvids(self, empty):
+    def update(self, params):
+        "Parse and execute the supplied icons command"
+        if len(params) != 1:
+            msg = "Expected single parameter, got: {0}".format(params)
+            logger.fatal(msg)
+            exit(1)
+        if params[0] == "xmltvids":
+            self.update_xmltvids()
+        else:
+            msg = "Unknown update parameters: {0}".format(params)
+            logger.fatal(msg)
+            exit(1)
+        return
+
+    def update_xmltvids(self):
         """Update the Channel database from the supplied XMLTV file."""
         csmap = self.callsign_map
         proposed_changes = []
@@ -174,7 +193,7 @@ class MythTVChannelMaintenance(object):
             if new_xmltvid != channel.XMLTVID:
                 proposed_changes.append((channel, new_xmltvid))
         if len(proposed_changes) == 0:
-            logger.info("update_xmltvids: no updates required")
+            logger.info("update xmltvids: no updates required")
             return
         if self.args.yes:
             proceed = True
@@ -204,21 +223,148 @@ class MythTVChannelMaintenance(object):
                         cid=channel.ChanId,
                         old=old_xmltvid,
                         new=channel.XMLTVID))
+            logger.info("Updated {0} record(s)".format(len(proposed_changes)))
         return
  
+    def icons(self, params):
+        "Parse and execute the supplied icons command"
+        if len(params) != 2:
+            msg = "Expected parameter and file name, got: {0}".format(params)
+            logger.fatal(msg)
+            exit(1)
+        if params[0] == "save":
+            self.icons_save(params[1])
+        elif params[0] == "load":
+            self.icons_load(params[1])
+        else:
+            msg = "Unknown icons parameters: {0}".format(params)
+            logger.fatal(msg)
+            exit(1)
+        return
+
+    def icons_save(self, file_name):
+        "Save the backend's icons to file_name"
+        # Build a dictionary of CallSign to Icon URL.
+        # We won't over-write an existing config file
+        if exists(file_name):
+            msg = ("{0} already exists: "
+                   "please rename or delete prior to saving").format(file_name)
+            logger.fatal(msg)
+            exit(1)
+        # There may be multiple entries with the same values, but no conflicts
+        icon_map = {}
+        for channel in self.channels:
+            call_sign = channel.CallSign
+            current_icon = icon_map.get(call_sign) 
+            if current_icon is not None:
+                if current_icon != channel.IconURL:
+                    msg = "{0} has conflicting icons: '{1}' & '{2}'".format(
+                        call_sign, current_icon, channel.IconURL)
+                    logger.fatal(msg)
+                    exit(1)
+                # else:
+                #    Icons match, no action required
+            else:
+                if channel.IconURL is not None:
+                    icon_map[call_sign] = channel.IconURL
+        # Write the dictionary to the specified file
+        with open(file_name, "w") as fp:
+            fp.write("""#
+# mythtv_cli_extensions icon map
+#
+# icon_map is a dictionary of:
+#
+#    Call Sign ==> Icon URL
+#
+icon_map = {
+""")
+            for k, v in icon_map.items():
+                fp.write("    '{0}' : '{1}',\n".format(k, v))
+            fp.write("}\n")
+        return
+
+    def icons_load(self, file_name):
+        "Load the backend's icons from file_name"
+        if not exists(file_name):
+            msg = ("{0} doesn't exist: "
+                   "please check the file name and location prior to loading").format(file_name)
+            logger.fatal(msg)
+            exit(1)
+        # Load the icon map
+        with open(file_name) as fp:
+            fcontents = fp.read()
+        file_globals = {}
+        file_locals = {}
+        exec(fcontents, file_globals, file_locals)
+        if 'icon_map' not in file_locals:
+            msg = ("The Icon Map file doesn't contain the expected "
+                   "dictionary: icon_map.  Please check the specified "
+                   "file is a valid icon map")
+            logger.fatal(msg)
+            exit(1)
+        icon_map = file_locals['icon_map']
+        # Iterate over the channels and produce proposed changes
+        proposed_changes = []
+        for channel in self.channels:
+            new_icon = icon_map.get(channel.CallSign)
+            if new_icon is None:
+                # No icon specified, move on
+                continue
+            if new_icon == channel.IconURL:
+                # No change, move on
+                continue
+            # Save the old Icon for user confirmation
+            channel._Old_IconURL = channel.IconURL
+            channel.IconURL = new_icon
+            proposed_changes.append(channel)
+        if len(proposed_changes) == 0:
+            logger.info("No Icon URLs to change")
+            exit(0)
+        proceed = self.args.yes
+        if not proceed:
+            # Ask the user for confirmation
+            fmt_string = "{id:<6} {callsign:<20} {old_icon:<50} {new_icon:<50}"
+            print(fmt_string.format(
+                    id="Id",
+                    callsign="CallSign",
+                    old_icon="Old Icon URL",
+                    new_icon="New Icon URL"))
+            print("-"*132)
+            for channel in proposed_changes:
+                print(fmt_string.format(
+                    id=channel.ChanId,
+                    callsign=channel.CallSign,
+                    old_icon=channel._Old_IconURL,
+                    new_icon=channel.IconURL))
+            answer = input("Proceed [y/N]? ")
+            proceed = answer.lower() in ["y", "yes"]
+        if proceed:
+            for channel in proposed_changes:
+                channel.save()
+                logger.info("Channel: {callsign} ({cid}): IconURL '{old}' -> '{new}'".format(
+                        callsign=channel.CallSign,
+                        cid=channel.ChanId,
+                        old=channel._Old_IconURL,
+                        new=channel.IconURL))
+            logger.info("Updated {0} record(s)".format(len(proposed_changes)))
+        return
+
 
 
 def main():
     logger.debug("Starting")
     epilog = """
-{prog} has 3 basic use cases:
+{prog} has 4 basic use cases:
 
     {prog} list xmltv --xmltv file.name
         List the channel and XMLTVID data contained in the xmltv file
     {prog} list channels
         List the channel data contained in the MythTV backend
-    {prog} update_xmltvids --xmltv file.name [-y]
+    {prog} update xmltvids --xmltv file.name [-y]
         Update Channel XMLTVIDs, see below
+    {prog} icons save/load file.name
+        Save or load the icon URLs to/from the specified file
+ 
 
 Updating Channel XMLTVIDs
 -------------------------
@@ -302,10 +448,10 @@ your channels, or that you need to re-scan for whatever reason.
                         default=False,
                         help="Execute updates without user confirmation")
     parser.add_argument('command',
-                        choices=['list', 'update_xmltvids'],
+                        choices=['list', 'update', 'icons'],
                         help="Maintenance command, see below")
     parser.add_argument('params',
-                        nargs='?',
+                        nargs='+',
                         help="Command parameter")
     parser.add_argument('--version',
                         action='version',
